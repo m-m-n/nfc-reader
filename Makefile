@@ -24,4 +24,6 @@ clean:
 
 install: $(TARGET)
 	install -m 755 $(TARGET) /usr/local/bin/
-	install -m 600 /dev/null /usr/local/etc/allowed-list.txt
+	@if [ ! -f /usr/local/etc/allowed-list.txt ]; then \
+		install -m 600 /dev/null /usr/local/etc/allowed-list.txt; \
+	fi

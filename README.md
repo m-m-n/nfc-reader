@@ -69,15 +69,17 @@ nfc-reader --timeout=30
 
 ## 許可リストファイル
 
-`allowed-list.txt`は、アクセスを許可するNFCカードのIDを管理するファイルです。このファイルは`/usr/local/etc/allowed-list.txt`にインストールされます。
+`allowed-list.txt`は、アクセスを許可するNFCカードのIDを管理するファイルです  
+このファイルは`/usr/local/etc/allowed-list.txt`にインストールされます
 
 ### ファイル形式
 
-1行に1つのカードIDを記述します。カードIDは16進数で記述します。
+1行にユーザー名と1つのカードIDをTAB区切りで記述します  
+カードIDは16進数で記述します。
 
 例：
 
 ```
-0123456789ABCDEF
-FEDCBA9876543210
+USERNAME1[\t]0123456789ABCDEF
+USERNAME2[\t]FEDCBA9876543210
 ```

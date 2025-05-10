@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <string.h>
 
-// カードIDリストを読み込む
-int load_card_ids(const char *filename, CardIdList *list)
+// カードリストを読み込む
+int load_card_list(const char *filename, CardList *list)
 {
     FILE *fp = fopen(filename, "r");
     if (!fp) {
@@ -13,13 +13,19 @@ int load_card_ids(const char *filename, CardIdList *list)
     }
 
     list->count = 0;
-    char line[MAX_ID_LENGTH];
+    char line[MAX_ID_LENGTH + MAX_USERNAME_LENGTH + 2]; // +2 for tab and null terminator
     while (fgets(line, sizeof(line), fp) && list->count < MAX_CARD_IDS) {
         line[strcspn(line, "\n")] = 0;
         if (strlen(line) > 0) {
-            strncpy(list->ids[list->count], line, MAX_ID_LENGTH - 1);
-            list->ids[list->count][MAX_ID_LENGTH - 1] = '\0';
-            list->count++;
+            char *tab = strchr(line, '\t');
+            if (tab) {
+                *tab = '\0'; // タブ文字を終端文字に置換
+                strncpy(list->entries[list->count].username, line, MAX_USERNAME_LENGTH - 1);
+                list->entries[list->count].username[MAX_USERNAME_LENGTH - 1] = '\0';
+                strncpy(list->entries[list->count].card_id, tab + 1, MAX_ID_LENGTH - 1);
+                list->entries[list->count].card_id[MAX_ID_LENGTH - 1] = '\0';
+                list->count++;
+            }
         }
     }
 
@@ -27,11 +33,15 @@ int load_card_ids(const char *filename, CardIdList *list)
     return 1;
 }
 
-// カードIDが許可リストに含まれているかチェック
-int is_card_id_allowed(const char *card_id, const CardIdList *list)
+// カードIDが許可リストに含まれているかチェックし、対応するユーザー名を返す
+int is_card_id_allowed(const char *card_id, const CardList *list, char *username)
 {
     for (int i = 0; i < list->count; i++) {
-        if (strcmp(card_id, list->ids[i]) == 0) {
+        if (strcmp(card_id, list->entries[i].card_id) == 0) {
+            if (username) {
+                strncpy(username, list->entries[i].username, MAX_USERNAME_LENGTH - 1);
+                username[MAX_USERNAME_LENGTH - 1] = '\0';
+            }
             return 1;
         }
     }
