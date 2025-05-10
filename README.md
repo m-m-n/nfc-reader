@@ -14,8 +14,8 @@ NFCカードリーダーを使用してカードの読み取りを行うシン�
 ### 依存パッケージのインストール
 
 ```bash
-sudo apt-get update
-sudo apt-get install libpcsclite-dev
+sudo apt update
+sudo apt install -y libpcsclite-dev
 ```
 
 ### ビルドとインストール
@@ -75,7 +75,7 @@ nfc-reader --timeout=30
 ### ファイル形式
 
 1行にユーザー名と1つのカードIDをTAB区切りで記述します  
-カードIDは16進数で記述します。
+カードIDは16進法で記述します
 
 例：
 
