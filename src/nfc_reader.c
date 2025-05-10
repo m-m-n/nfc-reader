@@ -36,7 +36,7 @@ static int try_connect_and_get_id(SCARDCONTEXT hContext, const char *reader_name
 {
     SCARDHANDLE hCard = 0;
     unsigned long dwActiveProtocol;
-    char card_id[MAX_ID_LENGTH] = {0};
+    char card_id[MAX_ID_HASH_LENGTH] = {0};
     int id_obtained = 0;
 
     // カードの接続を試みる

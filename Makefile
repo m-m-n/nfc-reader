@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -I/usr/include/PCSC -D_GNU_SOURCE
-LDFLAGS = -lpcsclite
+LDFLAGS = -lpcsclite -lcrypt
 
 SRC_DIR = src
 BUILD_DIR = build

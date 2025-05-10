@@ -75,11 +75,11 @@ nfc-reader --timeout=30
 ### ファイル形式
 
 1行にユーザー名と1つのカードIDをTAB区切りで記述します  
-カードIDは16進法で記述します
+カードIDは `mkpasswd -m bcrypt` を利用しハッシュ化します
 
 例：
+以下のコマンドで生成されるユーザーを登録します
 
-```
-USERNAME1[\t]0123456789ABCDEF
-USERNAME2[\t]FEDCBA9876543210
+```bash
+echo "$(id -nu)\t$(mkpasswd -m bcrypt $(nfc-reader))"
 ```
