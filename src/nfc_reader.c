@@ -25,13 +25,14 @@ static void print_usage(const char *program_name)
     fprintf(stderr, "使用方法: %s [オプション]\n", program_name);
     fprintf(stderr, "オプション:\n");
     fprintf(stderr, "  --allow-list-file=ファイル名  許可するカードIDのリストファイル\n");
+    fprintf(stderr, "  --user=ユーザー名            許可リストモードで検証するユーザー名\n");
     fprintf(stderr, "  --timeout=秒数               タイムアウト時間（秒）\n");
     fprintf(stderr, "  --help                       このヘルプを表示\n");
 }
 
 // カードの接続とID取得を試みる
 static int try_connect_and_get_id(SCARDCONTEXT hContext, const char *reader_name,
-                                  CardIdList *allowed_cards, int use_allow_list, int *return_value)
+                                  CardList *allowed_cards, int use_allow_list, const char *expected_user, int *return_value)
 {
     SCARDHANDLE hCard = 0;
     unsigned long dwActiveProtocol;
@@ -65,8 +66,17 @@ static int try_connect_and_get_id(SCARDCONTEXT hContext, const char *reader_name
             if (id_obtained) {
                 // 許可リストのチェック
                 if (use_allow_list) {
-                    if (is_card_id_allowed(card_id, allowed_cards)) {
-                        *return_value = 0;
+                    char username[MAX_USERNAME_LENGTH];
+                    if (is_card_id_allowed(card_id, allowed_cards, username)) {
+                        if (expected_user) {
+                            if (strcmp(username, expected_user) != 0) {
+                                *return_value = 1;
+                            } else {
+                                *return_value = 0;
+                            }
+                        } else {
+                            *return_value = 0;
+                        }
                     } else {
                         *return_value = 1;
                     }
@@ -93,8 +103,9 @@ int main(int argc, char *argv[])
     SCARDCONTEXT hContext = 0;
     char *readers = NULL;
     unsigned long cch = SCARD_AUTOALLOCATE;
-    CardIdList allowed_cards = {0};
+    CardList allowed_cards = {0};
     int use_allow_list = 0;
+    char *expected_user = NULL;
     int timeout_seconds = 0;
     time_t start_time;
     int return_value = 1;
@@ -102,19 +113,23 @@ int main(int argc, char *argv[])
     // コマンドライン引数の処理
     static struct option long_options[] = {
       {"allow-list-file", required_argument, 0, 'a'},
+      {"user", required_argument, 0, 'u'},
       {"timeout", required_argument, 0, 't'},
       {"help", no_argument, 0, 'h'},
       {0, 0, 0, 0}};
 
     int opt;
     int option_index = 0;
-    while ((opt = getopt_long(argc, argv, "a:t:h", long_options, &option_index)) != -1) {
+    while ((opt = getopt_long(argc, argv, "a:u:t:h", long_options, &option_index)) != -1) {
         switch (opt) {
             case 'a':
-                if (!load_card_ids(optarg, &allowed_cards)) {
+                if (!load_card_list(optarg, &allowed_cards)) {
                     return 1;
                 }
                 use_allow_list = 1;
+                break;
+            case 'u':
+                expected_user = optarg;
                 break;
             case 't':
                 timeout_seconds = atoi(optarg);
@@ -161,7 +176,7 @@ int main(int argc, char *argv[])
         }
 
         // カードの接続とID取得を試みる
-        if (try_connect_and_get_id(hContext, readers, &allowed_cards, use_allow_list, &return_value)) {
+        if (try_connect_and_get_id(hContext, readers, &allowed_cards, use_allow_list, expected_user, &return_value)) {
             break;
         }
 
