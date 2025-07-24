@@ -47,14 +47,22 @@ int verify_mkpasswd_hash(const char *card_id, const char *stored_hash)
 // カードIDが許可リストに含まれているかチェックし、対応するユーザー名を返す
 int is_card_id_allowed(const char *card_id, const CardList *list, char *username)
 {
+    int found = 0;
+    char last_username[MAX_USERNAME_LENGTH] = "";
+
     for (int i = 0; i < list->count; i++) {
         if (verify_mkpasswd_hash(card_id, list->entries[i].card_id_hash)) {
-            if (username) {
-                strncpy(username, list->entries[i].username, MAX_USERNAME_LENGTH - 1);
-                username[MAX_USERNAME_LENGTH - 1] = '\0';
-            }
-            return 1;
+            found = 1;
+            // 最後にマッチしたユーザー名を保存
+            strncpy(last_username, list->entries[i].username, MAX_USERNAME_LENGTH - 1);
+            last_username[MAX_USERNAME_LENGTH - 1] = '\0';
         }
     }
-    return 0;
+
+    if (found && username) {
+        strncpy(username, last_username, MAX_USERNAME_LENGTH - 1);
+        username[MAX_USERNAME_LENGTH - 1] = '\0';
+    }
+
+    return found;
 }
